@@ -504,4 +504,29 @@ public class ConditionalManaTest extends CardTestPlayerBase {
 
         assertPermanentCount(playerA, "Lost Auramancers", 0);
     }
+
+    @Test
+    public void tabletOfDiscoveryPaysGeneric() {
+        setStrictChooseMode(true);
+
+        // {T}: Add {R}{R}. Spend this mana only to cast instant and sorcery spells.
+        addCard(Zone.BATTLEFIELD, playerA, "Tablet of Discovery", 1);
+        addCard(Zone.BATTLEFIELD, playerA, "Mountain", 2);
+
+        // {1}{R} sorcery: Tome Blast deals 2 damage to any target.
+        addCard(Zone.HAND, playerA, "Tome Blast", 1);
+        addCard(Zone.BATTLEFIELD, playerB, "Poisoner's Apprentice", 1);
+
+        activateManaAbility(1, PhaseStep.PRECOMBAT_MAIN, playerA, "{T}: Add {R}{R}");
+        castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, "Tome Blast", "Poisoner's Apprentice");
+
+        setStopAt(1, PhaseStep.BEGIN_COMBAT);
+        execute();
+
+        assertGraveyardCount(playerA, "Tome Blast", 1);
+        Assert.assertEquals("post-cast mana pool has to be empty", 0, playerA.getManaPool().getMana().count());
+        Assert.assertTrue("post-cast conditional mana pool has to be empty",
+                playerA.getManaPool().getConditionalMana().isEmpty());
+        assertTappedCount("Mountain", false, 2);
+    }
 }
