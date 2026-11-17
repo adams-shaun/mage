@@ -6,7 +6,7 @@ import mage.abilities.common.LeavesBattlefieldTriggeredAbility;
 import mage.abilities.common.SimpleStaticAbility;
 import mage.abilities.dynamicvalue.DynamicValue;
 import mage.abilities.dynamicvalue.common.PermanentsOnBattlefieldCount;
-import mage.abilities.effects.common.SacrificeEffect;
+import mage.abilities.effects.common.SacrificeControllerEffect;
 import mage.abilities.effects.common.continuous.BoostSourceEffect;
 import mage.abilities.effects.common.search.SearchLibraryPutInPlayEffect;
 import mage.cards.CardImpl;
@@ -48,7 +48,7 @@ public final class MoltenManInfernoIncarnate extends CardImpl {
 
         // When this leaves the battlefield, sacrifice a land.
         this.addAbility(new LeavesBattlefieldTriggeredAbility(
-                new SacrificeEffect(new FilterControlledLandPermanent("a land"), 1, ""))
+                new SacrificeControllerEffect(new FilterControlledLandPermanent("a land"), 1, ""))
         );
     }
 
