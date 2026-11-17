@@ -11,6 +11,7 @@ import mage.game.Game;
 import mage.game.events.BatchEvent;
 import mage.game.events.GameEvent;
 import mage.game.events.ZoneChangeEvent;
+import mage.game.permanent.Permanent;
 import mage.game.permanent.PermanentToken;
 import mage.players.Player;
 import mage.util.CardUtil;
@@ -80,23 +81,36 @@ public abstract class TriggeredAbilityImpl extends AbilityImpl implements Trigge
 
     // Used for triggers with a per-turn limit.
     private String getKeyLastTurnTriggered(Game game) {
-        return CardUtil.getCardZoneString(
-                "lastTurnTriggered|" + getOriginalId(), getSourceId(), game
-        );
+        return getTriggerLimitKey("lastTurnTriggered|" + getOriginalId(), game);
     }
 
     // Used for triggers with a per-turn limit.
     private String getKeyLastTurnTriggeredCount(Game game) {
-        return CardUtil.getCardZoneString(
-                "lastTurnTriggeredCount|" + getOriginalId(), getSourceId(), game
-        );
+        return getTriggerLimitKey("lastTurnTriggeredCount|" + getOriginalId(), game);
     }
 
     // Used for triggers with a per-game limit.
     private String getKeyGameTriggeredCount(Game game) {
-        return CardUtil.getCardZoneString(
-                "gameTriggeredCount|" + getOriginalId(), getSourceId(), game
-        );
+        return getTriggerLimitKey("gameTriggeredCount|" + getOriginalId(), game);
+    }
+
+    /**
+     * Key for a trigger limit counter. A leaves-the-battlefield trigger looks
+     * back in time (CR 603.10a), so the ability whose limit is checked is the
+     * one the source had immediately before it left the battlefield. Using the
+     * card's current zone-change counter would give the trigger a fresh counter
+     * for the zone it moved to and let "triggers only once each turn" fire
+     * again from the graveyard.
+     */
+    private String getTriggerLimitKey(String text, Game game) {
+        if (isLeavesTheBattlefieldTrigger()) {
+            Permanent source = game.getPermanentOrLKIBattlefield(getSourceId());
+            if (source != null) {
+                return CardUtil.getObjectZoneString(text, source.getId(), game,
+                        source.getZoneChangeCounter(game), false);
+            }
+        }
+        return CardUtil.getCardZoneString(text, getSourceId(), game);
     }
 
     private void updateTurnCount(Game game) {
