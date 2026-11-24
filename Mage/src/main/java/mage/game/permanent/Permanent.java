@@ -220,8 +220,10 @@ public interface Permanent extends Card, Controllable {
     default int damageWithExcess(int damage, UUID attackerId, Ability source, Game game) {
         int lethal = getLethalDamage(attackerId, game);
         int excess = Math.max(CardUtil.overflowDec(damage, lethal), 0);
-        int dealt = Math.min(lethal, damage);
-        this.damage(dealt, attackerId, source, game);
+        // CR 120.3 / 701.14a / 702.15b: all of the damage is dealt, not just the lethal part
+        // (lifelink gains, damage-dealt triggers and damage counters count the whole amount);
+        // the excess is only reported to the caller.
+        this.damage(damage, attackerId, source, game);
         return excess;
     }
 
