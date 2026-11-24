@@ -13,6 +13,7 @@ import mage.constants.Zone;
 import mage.game.Game;
 import mage.game.permanent.Permanent;
 import mage.players.Player;
+import mage.util.CardUtil;
 import mage.target.targetpointer.FixedTarget;
 
 /**
@@ -78,10 +79,11 @@ public class ReturnSourceFromGraveyardToBattlefieldEffect extends OneShotEffect 
         if (player == null) {
             return false;
         }
-        if (game.getState().getZone(source.getSourceId()) == Zone.GRAVEYARD) {
+        if (game.getState().getZone(source.getSourceId()) == Zone.GRAVEYARD
+                && source.getSourceObjectIfItStillExists(game) != null) { // CR 400.7: not a new object
             player.moveCards(card, Zone.BATTLEFIELD, source, game, tapped, false, true, null);
             if (haste) {
-                Permanent permanent = game.getPermanent(card.getId());
+                Permanent permanent = CardUtil.getPermanentFromCardPutToBattlefield(card, game);
                 if (permanent != null) {
                     ContinuousEffect effect = new GainAbilityTargetEffect(HasteAbility.getInstance(), Duration.Custom);
                     effect.setTargetPointer(new FixedTarget(permanent, game));
