@@ -8,8 +8,11 @@ import mage.game.permanent.Permanent;
 import mage.game.stack.StackObject;
 import mage.watchers.Watcher;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  *
@@ -17,7 +20,7 @@ import java.util.Map;
  */
 public class NumberOfTimesPermanentTargetedATurnWatcher extends Watcher {
 
-    private final Map<MageObjectReference, Integer> permanentsTargeted = new HashMap<>();
+    private final Map<MageObjectReference, List<UUID>> permanentsTargeted = new HashMap<>();
 
     public NumberOfTimesPermanentTargetedATurnWatcher() {
         super(WatcherScope.GAME);
@@ -35,13 +38,24 @@ public class NumberOfTimesPermanentTargetedATurnWatcher extends Watcher {
         Permanent permanent = game.getPermanent(event.getTargetId());
         if (permanent != null) {
             MageObjectReference mor = new MageObjectReference(permanent, game);
-            int nTimes = permanentsTargeted.getOrDefault(mor, 0);
-            permanentsTargeted.put(mor, nTimes + 1);
+            permanentsTargeted.computeIfAbsent(mor, k -> new ArrayList<>()).add(targetingObject.getControllerId());
         }
     }
 
     public int numTimesTargetedThisTurn(Permanent permanent, Game game) {
-        return permanentsTargeted.getOrDefault(new MageObjectReference(permanent, game), 0);
+        return permanentsTargeted.getOrDefault(new MageObjectReference(permanent, game), new ArrayList<>()).size();
+    }
+
+    /**
+     * Number of times the permanent was targeted this turn by spells and
+     * abilities controlled by the given player (CR 603.2: "spell or ability
+     * you control" counts only that player's own targeting).
+     */
+    public int numTimesTargetedThisTurnBy(Permanent permanent, UUID controllerId, Game game) {
+        return (int) permanentsTargeted.getOrDefault(new MageObjectReference(permanent, game), new ArrayList<>())
+                .stream()
+                .filter(controllerId::equals)
+                .count();
     }
 
     @Override
