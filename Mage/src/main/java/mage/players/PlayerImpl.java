@@ -16,7 +16,6 @@ import mage.abilities.common.PassAbility;
 import mage.abilities.common.PlayLandAsCommanderAbility;
 import mage.abilities.common.WhileSearchingPlayFromLibraryAbility;
 import mage.abilities.costs.*;
-import mage.abilities.costs.common.WaterbendCost;
 import mage.abilities.costs.common.WaterbendXCost;
 import mage.abilities.costs.mana.AlternateManaPaymentAbility;
 import mage.abilities.costs.mana.ManaCost;
@@ -3933,7 +3932,7 @@ public abstract class PlayerImpl implements Player, Serializable {
                     // TODO: Describe this
                     // Abilities that let us spend mana as if it were any (or other colors/types) must be handled separately
                     // and can't be incorporated into calculating availableMana since the number of combinations would explode.
-                    if (!approvingObjects.isEmpty() && mana.count() <= payableMana.count()) {
+                    if (!approvingObjects.isEmpty() && mana.count() <= avail.count()) {
                         // TODO: I think this is wrong for spell that require colorless
                         return true;
                     }
@@ -3951,16 +3950,15 @@ public abstract class PlayerImpl implements Player, Serializable {
     }
 
     /**
-     * How many generic mana of this ability's waterbend cost the player can cover by tapping
-     * untapped artifacts and creatures they control (CR 701.67a). Capped at the waterbend part
-     * of the minimum cost so the helpers never pay a non-waterbend mana symbol (CR 701.67b).
+     * How many generic mana of this ability's Waterbend {X} cost the player can cover by tapping
+     * untapped artifacts and creatures they control (CR 701.67a). Capped at the minimum X part
+     * so the helpers never pay a non-waterbend mana symbol (CR 701.67b). A fixed WaterbendCost
+     * needs no credit: it already offers a {0} option for its own waterbend part.
      */
     private int getWaterbendHelpers(ActivatedAbility ability, Game game) {
         int waterbendGeneric = 0;
         for (ManaCost cost : ability.getManaCostsToPay()) {
-            if (cost instanceof WaterbendCost) {
-                waterbendGeneric = CardUtil.overflowInc(waterbendGeneric, ((WaterbendCost) cost).manaValue());
-            } else if (cost instanceof WaterbendXCost) {
+            if (cost instanceof WaterbendXCost) {
                 VariableManaCost variableCost = (VariableManaCost) cost;
                 waterbendGeneric = CardUtil.overflowInc(waterbendGeneric,
                         CardUtil.overflowMultiply(variableCost.getMinX(), variableCost.getXInstancesCount()));
