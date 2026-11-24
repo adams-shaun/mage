@@ -5,6 +5,9 @@ import mage.constants.AbilityWord;
 import mage.constants.SetTargetPointer;
 import mage.constants.TargetController;
 import mage.filter.FilterStackObject;
+import mage.game.Game;
+import mage.game.permanent.Permanent;
+import mage.watchers.common.NumberOfTimesPermanentTargetedATurnWatcher;
 
 /**
  * @author xenohedron, TheElk801
@@ -30,6 +33,16 @@ public class ValiantTriggeredAbility extends BecomesTargetSourceFirstTimeTrigger
 
     private ValiantTriggeredAbility(final ValiantTriggeredAbility ability) {
         super(ability);
+    }
+
+    /**
+     * Valiant's "first time each turn" counts only spells and abilities its
+     * controller controls: an opponent targeting the creature first does not
+     * use it up.
+     */
+    @Override
+    protected int numTimesTargetedThisTurn(NumberOfTimesPermanentTargetedATurnWatcher watcher, Permanent permanent, Game game) {
+        return watcher.numTimesTargetedThisTurnBy(permanent, getControllerId(), game);
     }
 
     @Override
