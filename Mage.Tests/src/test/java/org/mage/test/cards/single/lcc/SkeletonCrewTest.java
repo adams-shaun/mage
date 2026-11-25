@@ -2,52 +2,57 @@ package org.mage.test.cards.single.lcc;
 
 import mage.constants.PhaseStep;
 import mage.constants.Zone;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mage.test.serverside.base.CardTestPlayerBase;
 
 /**
- * @author JayDi85
+ * {@link mage.cards.s.SkeletonCrew Skeleton Crew} {3}{B} 3/3
+ * Whenever one or more creature cards leave your graveyard, create a 2/2 black Skeleton Pirate creature token.
+ * {5}{B}: Return Skeleton Crew from your graveyard to the battlefield tapped.
+ * <p>
+ * CR 603.10a: leaves-the-graveyard abilities look back to the state before the event, so Skeleton Crew
+ * returning itself from the graveyard doesn't trigger its own ability.
  */
 public class SkeletonCrewTest extends CardTestPlayerBase {
 
+    private static final String crew = "Skeleton Crew";
+    private static final String pirate = "Skeleton Pirate Token";
+
     @Test
-    public void test_OtherCreatureLeavesGraveyard() {
-        // Whenever one or more creature cards leave your graveyard, create a 2/2 black Skeleton Pirate creature token.
-        addCard(Zone.BATTLEFIELD, playerA, "Skeleton Crew");
-        //
-        // Put target creature card from a graveyard onto the battlefield under your control.
-        // You lose life equal to its mana value.
-        addCard(Zone.HAND, playerA, "Reanimate"); // {B}
-        addCard(Zone.BATTLEFIELD, playerA, "Swamp", 1);
-        addCard(Zone.GRAVEYARD, playerA, "Grizzly Bears", 1);
-
-        castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, "Reanimate", "Grizzly Bears");
-
+    public void test_SelfReturnDoesNotTrigger() {
         setStrictChooseMode(true);
-        setStopAt(1, PhaseStep.END_TURN);
+
+        addCard(Zone.GRAVEYARD, playerA, crew);
+        addCard(Zone.BATTLEFIELD, playerA, "Swamp", 6);
+
+        activateAbility(1, PhaseStep.PRECOMBAT_MAIN, playerA, "{5}{B}: Return");
+        waitStackResolved(1, PhaseStep.PRECOMBAT_MAIN);
+        checkStackSize("no Skeleton Crew trigger", 1, PhaseStep.PRECOMBAT_MAIN, playerA, 0);
+
+        setStopAt(1, PhaseStep.BEGIN_COMBAT);
+        execute();
+
+        assertPermanentCount(playerA, crew, 1);
+        assertPermanentCount(playerA, "Skeleton Pirate Token", 0);
+        assertPowerToughness(playerA, crew, 3, 3);
+    }
+
+    @Test
+    public void test_OtherCreatureLeavingStillTriggers() {
+        setStrictChooseMode(true);
+
+        addCard(Zone.BATTLEFIELD, playerA, crew);
+        addCard(Zone.GRAVEYARD, playerA, "Grizzly Bears");
+        addCard(Zone.HAND, playerA, "It Doesn't Add Up"); // {3}{B}{B} instant, return target creature card from your graveyard to the battlefield
+        addCard(Zone.BATTLEFIELD, playerA, "Swamp", 5);
+
+        castSpell(1, PhaseStep.PRECOMBAT_MAIN, playerA, "It Doesn't Add Up", "Grizzly Bears");
+        waitStackResolved(1, PhaseStep.PRECOMBAT_MAIN);
+
+        setStopAt(1, PhaseStep.BEGIN_COMBAT);
         execute();
 
         assertPermanentCount(playerA, "Grizzly Bears", 1);
         assertPermanentCount(playerA, "Skeleton Pirate Token", 1);
-    }
-
-    @Test
-    @Ignore // TODO: leaves graveyard triggers look back in time (CR 603.10a), so the returned permanent must not trigger its own ability, see #13415
-    public void test_ReturnItself_NoTrigger() {
-        // Whenever one or more creature cards leave your graveyard, create a 2/2 black Skeleton Pirate creature token.
-        // {5}{B}: Return Skeleton Crew from your graveyard to the battlefield tapped.
-        addCard(Zone.GRAVEYARD, playerA, "Skeleton Crew");
-        addCard(Zone.BATTLEFIELD, playerA, "Swamp", 6);
-
-        // return itself - its battlefield ability did not exist before the event
-        activateAbility(1, PhaseStep.PRECOMBAT_MAIN, playerA, "{5}{B}: Return");
-
-        setStrictChooseMode(true);
-        setStopAt(1, PhaseStep.END_TURN);
-        execute();
-
-        assertPermanentCount(playerA, "Skeleton Crew", 1);
-        assertPermanentCount(playerA, "Skeleton Pirate Token", 0);
     }
 }
