@@ -10,6 +10,7 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.FilterCard;
+import mage.filter.common.FilterNonlandCard;
 import mage.filter.StaticFilters;
 import mage.filter.predicate.Predicates;
 
@@ -21,7 +22,8 @@ import java.util.UUID;
  */
 public final class MadameWebClairvoyant extends CardImpl {
 
-    private static final FilterCard filter = new FilterCard("cast Spider spells and noncreature spells");
+    // Lands are played, not cast (CR 305.1, 601.1), so a land on top never matches "cast ... spells".
+    private static final FilterCard filter = new FilterNonlandCard("cast Spider spells and noncreature spells");
 
     static {
         filter.add(Predicates.or(

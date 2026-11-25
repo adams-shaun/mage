@@ -10,6 +10,7 @@ import mage.cards.CardImpl;
 import mage.cards.CardSetInfo;
 import mage.constants.*;
 import mage.filter.FilterCard;
+import mage.filter.common.FilterNonlandCard;
 import mage.filter.common.FilterCreaturePermanent;
 import mage.filter.predicate.Predicate;
 import mage.game.Game;
@@ -21,7 +22,8 @@ import java.util.UUID;
  */
 public final class LilaHospitalityHostess extends CardImpl {
 
-    private static final FilterCard filter = new FilterCard("cast common spells");
+    // Lands are played, not cast (CR 305.1, 601.1), so a common land on top never matches "cast common spells".
+    private static final FilterCard filter = new FilterNonlandCard("cast common spells");
     private static final FilterCreaturePermanent filter2 = new FilterCreaturePermanent(SubType.GUEST, "Guests");
 
     static {
