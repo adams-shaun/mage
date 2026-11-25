@@ -99,7 +99,7 @@ class WildShapeEffect extends ContinuousEffectImpl {
         switch (layer) {
             case TypeChangingEffects_4:
                 permanent.removeAllCreatureTypes(game);
-                permanent.addSubType(game, SubType.HUMAN);
+                permanent.addSubType(game, subType);
                 return true;
             case AbilityAddingRemovingEffects_6:
                 permanent.addAbility(ability, source.getSourceId(), game);
