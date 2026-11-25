@@ -80,6 +80,11 @@ class ExtraordinaryJourneyEffect extends OneShotEffect {
 
     @Override
     public boolean apply(Game game, Ability source) {
+        // "up to X target creatures" with X = 0 has no targets at all (XTargetsCountAdjuster clears the
+        // blueprint target), so there is nothing to exile and no card to play (CR 601.2c, 115.6)
+        if (source.getTargets().isEmpty()) {
+            return true;
+        }
         List<Permanent> permanents = source
                 .getTargets().get(0).getTargets()
                 .stream()
